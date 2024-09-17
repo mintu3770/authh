@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+</head>
+<body>
+    <h1>Login Page</h1>
+    <form id="login-form">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button type="submit">Login</button>
+    </form>
+
+    <button id="google-signin">Login with Google</button>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZzS95HV_pPU8j46XUoSOCf6w8qDjuu3M",
+            authDomain: "levitate-hyperloop-webapp.firebaseapp.com",
+            projectId: "levitate-hyperloop-webapp",
+            storageBucket: "levitate-hyperloop-webapp.appspot.com",
+            messagingSenderId: "50632187370",
+            appId: "1:50632187370:web:d1163e9f979fabbea96693",
+            measurementId: "G-R8YVJQ06PD"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Login with email and password
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    // Get the Firebase ID token and send it to Django backend
+                    userCredential.user.getIdToken().then(idToken => {
+                        fetch("/accounts/firebase-auth/", {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ idToken: idToken })
+                        }).then(response => {
+                            if (response.ok) {
+                                window.location.href = "/accounts/dashboard/";
+                            } else {
+                                console.error('Failed to authenticate with Django');
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error logging in:', error.message);
+                });
+        });
+
+        // Login with Google
+        document.getElementById('google-signin').addEventListener('click', function() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(result => {
+                    result.user.getIdToken().then(idToken => {
+                        fetch("/accounts/firebase-auth/", {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ idToken: idToken })
+                        }).then(response => {
+                            if (response.ok) {
+                                window.location.href = "/accounts/dashboard/";
+                            } else {
+                                console.error('Failed to authenticate with Django');
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error during Google login:', error.message);
+                });
+        });
+    </script>
+</body>
+</html>

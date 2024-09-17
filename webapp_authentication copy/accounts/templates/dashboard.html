@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+</head>
+<body>
+    <h1>Welcome to Your Dashboard</h1>
+    <p id="user-info"></p>
+    <button id="logout">Logout</button>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZzS95HV_pPU8j46XUoSOCf6w8qDjuu3M",
+            authDomain: "levitate-hyperloop-webapp.firebaseapp.com",
+            projectId: "levitate-hyperloop-webapp",
+            storageBucket: "levitate-hyperloop-webapp.appspot.com",
+            messagingSenderId: "50632187370",
+            appId: "1:50632187370:web:d1163e9f979fabbea96693",
+            measurementId: "G-R8YVJQ06PD"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // Get Firebase Auth instance
+        const auth = firebase.auth();
+
+        // Check if the user is authenticated
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('user-info').textContent = `Hello, ${user.email}!`;
+            } else {
+                // Redirect to login page if not logged in
+                window.location.href = "{% url 'login' %}";
+            }
+        });
+
+        // Logout button logic
+        document.getElementById('logout').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                // Redirect to logout page after logging out
+                window.location.href = "{% url 'logout' %}";
+            }).catch(error => {
+                console.error('Error logging out:', error.message);
+            });
+        });
+    </script>
+</body>
+</html>
